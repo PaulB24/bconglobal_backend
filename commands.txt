@@ -1,0 +1,46 @@
+docker-compose build
+docker-compose up
+
+docker-compose up --build
+
+создать миграции
+python manage.py makemigrations
+
+применить миграции
+python manage.py migrate
+
+создать админа
+python manage.py createsuperuser
+
+запустить вотчеры
+docker exec -it backend python manage.py consumer
+
+проверить стили
+black .
+
+
+====================================
+queue routing_key = "crypto"
+
+
+==== content_type = "new_transaction" ==== output ====
+
+==binance==
+{'transaction': '0x8059ef1ef77ffb3ab5b1eb87eac0cbb0485f8f5bcf00e721eeeee0fc91370f0e', 'from_addr': '0x05070f90B34FcE76d63EC1Ad2F3BAc5DD7a67EEA', 'to_addr': '0xf959cC2dffA1a6328A16074dbe98f5eD1535ff9E', 'value': '0', 'block_hash': '0x1d99c30e56d0e610d15cf41ce13753f7709357fb1a7ed834ac26b67e06fd5389', 'block_number': '22634679', 'timestamp': 1667168039, 'status': 'PARTIAL CONFIRMED', 'chain': 'BINANCE'}
+
+==bitcoin==
+{'transaction': '6e7f439850abb57de20fe311c2d023004e026dc53cc0630646d9ad22533f2e71', 'block_hash': '000000000000000000027f0629c1eaf4291bc329486994ccd16c0b43af8f88e4', 'block_number': '761011', 'timestamp': 1667170091, 'chain': 'BITCOIN', 'status': 'PARTIAL CONFIRMED', 'tx_address': [{'address': '3CXJjDxErLy2umyTM4mUuwWfGGu7Tcw3iM', 'value': '0.0', 'character': 'INPUT'}, {'address': 'bc1qw42nl44rw40t0h0d79qzrk8nxqr95e0rdxzqg47mdwvntzjwsadq7609cc', 'value': '0.00091064', 'character': 'OUTPUT'}, {'address': '3MAgGevgd8o8ywpUjPD5uSr1mYhFmEexxN', 'value': '0.00065352', 'character': 'OUTPUT'}]}
+
+
+==== content_type = "update_transaction" ==== output ====
+
+==binance==
+{'transaction': '0x8059ef1ef77ffb3ab5b1eb87eac0cbb0485f8f5bcf00e721eeeee0fc91370f0e', 'from_addr': '0x05070f90B34FcE76d63EC1Ad2F3BAc5DD7a67EEA', 'to_addr': '0xf959cC2dffA1a6328A16074dbe98f5eD1535ff9E', 'value': '0', 'block_hash': '0x1d99c30e56d0e610d15cf41ce13753f7709357fb1a7ed834ac26b67e06fd5389', 'block_number': '22634679', 'timestamp': 1667168039, 'status': 'CONFIRMED', 'chain': 'BINANCE'}
+
+==bitcoin==
+{'transaction': '6e7f439850abb57de20fe311c2d023004e026dc53cc0630646d9ad22533f2e71', 'block_hash': '000000000000000000027f0629c1eaf4291bc329486994ccd16c0b43af8f88e4', 'block_number': '761011', 'timestamp': 1667170091, 'chain': 'BITCOIN', 'status': 'CONFIRMED', 'tx_address': [{'address': '3CXJjDxErLy2umyTM4mUuwWfGGu7Tcw3iM', 'value': '0.0', 'character': 'INPUT'}, {'address': 'bc1qw42nl44rw40t0h0d79qzrk8nxqr95e0rdxzqg47mdwvntzjwsadq7609cc', 'value': '0.00091064', 'character': 'OUTPUT'}, {'address': '3MAgGevgd8o8ywpUjPD5uSr1mYhFmEexxN', 'value': '0.00065352', 'character': 'OUTPUT'}]}
+
+
+==== content_type = "new_address"  ==== input ====
+{'address': 'bc1qxzsr6ce00eausup97jnssld7hsd4kzpp8nhedt', 'chain': 'BITCOIN'}
+

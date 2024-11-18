@@ -1,0 +1,18 @@
+[tool.black]
+safe = true
+py36 = true
+exclude = '''
+/(
+  migrations
+  | __pycache__
+| \.git
+| \.mypy_cache
+| \.tox
+| \.venv
+| _build
+| build
+| dist
+| docs
+| env
+)/
+'''

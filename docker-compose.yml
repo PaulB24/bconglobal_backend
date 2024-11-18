@@ -1,0 +1,102 @@
+version: "3.9"
+
+services:
+
+  db:
+    image: postgres:13.3
+    container_name: postgres_db
+    ports:
+      - "5432:5432"
+    env_file:
+      - ./.env
+    environment:
+      - POSTGRES_DB=${PG_NAME}
+      - POSTGRES_USER=${PG_USER}
+      - POSTGRES_PASSWORD=${PG_PASS}
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${PG_USER} {PG_NAME}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    image: app:backend
+    restart: always
+    container_name: backend
+    build: .
+    env_file:
+      - ./.env
+    volumes:
+      - ./:/app
+    ports:
+      - 8000:8000
+    command: bash -c "chmod u+x wait-for-postgres.sh && ./wait-for-postgres.sh db && ls -la && python -u manage.py collectstatic --noinput && python -u manage.py migrate && python -u manage.py runserver 0.0.0.0:8000"
+    depends_on:
+      - db
+      - rabbit
+
+  consumer:
+    restart: always
+    container_name: consumer
+    build: .
+    env_file:
+      - ./.env
+    command: bash -c "chmod u+x wait-for-postgres.sh && ./wait-for-postgres.sh db && python -u manage.py consumer"
+    depends_on:
+      - rabbit
+      - db
+
+  binance:
+    restart: always
+    container_name: binance
+    build: .
+    env_file:
+      - ./.env
+    command: bash -c "chmod u+x wait-for-postgres.sh && ./wait-for-postgres.sh db && python -u manage.py bsc_scan"
+    depends_on:
+      - db
+
+  bitcoin:
+    restart: always
+    container_name: bitcoin
+    build: .
+    env_file:
+      - ./.env
+    command: bash -c "chmod u+x wait-for-postgres.sh && ./wait-for-postgres.sh db && python -u manage.py btc_scan"
+    depends_on:
+      - db
+
+  bitcoin_utxo:
+    restart: always
+    container_name: bitcoin_utxo
+    build: .
+    env_file:
+      - ./.env
+    command: bash -c "chmod u+x wait-for-postgres.sh && ./wait-for-postgres.sh db && python -u manage.py btc_utxo"
+    depends_on:
+      - db
+
+  btc_mempool:
+    restart: always
+    container_name: btc_mempool
+    build: .
+    env_file:
+      - ./.env
+    command: bash -c "chmod u+x wait-for-postgres.sh && ./wait-for-postgres.sh db && python -u manage.py btc_mempool"
+    depends_on:
+      - db
+      - backend
+
+  rabbit:
+    hostname: rabbit
+    image: rabbitmq:3.6.9
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=mypass
+    volumes:
+      - ./data/rabbitmq_data:/var/lib/rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"

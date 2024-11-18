@@ -1,0 +1,47 @@
+name: Build and Deploy DEV
+on:
+  push:
+    branches: [ dev ]
+jobs:
+
+  build:
+    name: Build app
+    runs-on: [cryptoprocess]
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: env copy
+        run: cp .env.example .env
+
+      - name: sed subst
+        run: |
+          sed -i -e 's/USER_PG/${{ secrets.DEV_PG_USER }}/g' .env
+          sed -i -e 's#PASS_PG#${{ secrets.DEV_PG_PASS }}#g' .env
+          sed -i -e 's#ENDPOINTS_BSC_HTTPS#${{ secrets.DEV_BSC_HTTPS_ENDPOINTS }}#g' .env
+          sed -i -e 's#UPDATE_BINANCE_FREQUENCY#${{ secrets.DEV_BINANCE_UPDATE_FREQUENCY }}#g' .env
+          sed -i -e 's#HOST_BITCOIN#${{ secrets.DEV_BITCOIN_HOST }}#g' .env
+          sed -i -e 's#PORT_BITCOIN#${{ secrets.DEV_BITCOIN_PORT }}#g' .env
+          sed -i -e 's#USERNAME_BITCOIN#${{ secrets.DEV_BITCOIN_USERNAME }}#g' .env
+          sed -i -e 's#PASSWORD_BITCOIN#${{ secrets.DEV_BITCOIN_PASSWORD }}#g' .env
+          sed -i -e 's#PASS_RABBIT#${{ secrets.DEV_PASS_RABBIT }}#g' .env
+          sed -i -e 's/FREQUENCY_UPDATE_BITCOIN/${{ secrets.DEV_BITCOIN_UPDATE_FREQUENCY }}/g' .env
+
+      - name: Build and tag
+        run: |
+          docker build -t crypto-processing-watcher:latest . --network cryptoprocessing
+
+      - name: docker-compose restart
+        working-directory: /home/unit-space
+        run: docker-compose down && docker-compose up -d
+
+      - uses: ravsamhq/notify-slack-action@v1
+        if: always()
+        with:
+          status: ${{ job.status }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          notification_title: '{workflow} has {status_message}'
+          message_format: '{emoji} *{workflow}* {status_message} in <{repo_url}|{repo}>'
+          footer: 'Linked Repo <{repo_url}|{repo}> | <{workflow_url}|View Workflow>'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.DEV_SLACK_GITHUB_ACTION_WEBHOOK_URL }}
+
